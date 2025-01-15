@@ -32,29 +32,34 @@ def videoAbleToOpen(cap):
 
 
 # send data to the process service via http
-def sendData(image):
+def sendData(frame,i):
     try:
+
+        # Encode the frame as PNG
+        _, image = cv2.imencode('.jpeg', frame)
+
         # make the request
         response = requests.post(
             "http://127.0.0.1:8000/detect/",
-            files={"file": ("image.jpg", image, "image/png")},
+            files={"file": ("image.jpg", image.tobytes(), "image/jpeg")},
+            params={"frame_number": i},
         )
-        print(response.json())
+        print(response.json(),i)
     except requests.exceptions.RequestException as e:
         print(f"Failed to send data: {e}")
 
 
 def detect(cap):
     try:
+        i=1
         while True:
             ret, frame = cap.read()
             if not ret:
                 print("End of video or error reading the frame.")
                 break
-            _, buffer = cv2.imencode('.png', frame)
-
             # call the send frame method
-            sendData(frame.tobytes())
+            sendData(frame,i)
+            i+=1
 
     finally:
         cap.release()

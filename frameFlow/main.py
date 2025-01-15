@@ -13,7 +13,7 @@ app = FastAPI()
 
 result = input("type start")
 if result == "start":
-    detect(cap3)
+    detect(cap1)
 
 
 
