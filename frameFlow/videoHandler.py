@@ -5,7 +5,7 @@ import requests
 
 # GET THE PATHS OF THE VIDEOS
 
-video_1_path = "videos/video1.webm"
+video_1_path = "videos/video1.mp4"
 video_2_path = "videos/video2.webm"
 video_3_path = "videos/video3.webm"
 video_4_path = "videos/video4.webm"
@@ -36,12 +36,12 @@ def sendData(frame,i):
     try:
 
         # Encode the frame as PNG
-        _, image = cv2.imencode('.jpeg', frame)
+        _, image = cv2.imencode('.png', frame)
 
         # make the request
         response = requests.post(
-            "http://127.0.0.1:8000/detect/",
-            files={"file": ("image.jpg", image.tobytes(), "image/jpeg")},
+            "http://127.0.0.1:8080/detect/",
+            files={"file": ("image.png", image.tobytes(), "image/png")},
             params={"frame_number": i},
         )
         print(response.json(),i)
@@ -50,8 +50,9 @@ def sendData(frame,i):
 
 
 def detect(cap):
+    i = 1
     try:
-        i=1
+
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -62,4 +63,6 @@ def detect(cap):
             i+=1
 
     finally:
+        print("TOTAL FRAMES NUMBER: ", int(cap.get(cv2.CAP_PROP_FRAME_COUNT)))
+        print("FRAMES PROCESSED NUMBER = ", i)
         cap.release()
