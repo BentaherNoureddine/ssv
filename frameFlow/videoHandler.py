@@ -1,7 +1,7 @@
-import asyncio
 import cv2
 from cv2 import VideoCapture
 import requests
+
 
 # GET THE PATHS OF THE VIDEOS
 
@@ -11,15 +11,20 @@ video_3_path = "videos/video3.webm"
 video_4_path = "videos/video4.webm"
 
 
+# CAPTURED VIDEO SCHEMA
+class stCap:
+    def __init__(self, videoCapture, videoName):
+        self.videoCapture = videoCapture
+        self.videoName = videoName
+
+
+
 # CAPTURE THE VIDEOS
 
-cap1 = VideoCapture(video_1_path)
-
-cap2 = VideoCapture(video_2_path)
-
-cap3 = VideoCapture(video_3_path)
-
-cap4 = VideoCapture(video_4_path)
+cap1 = stCap(VideoCapture(video_1_path), videoName="video1.mp4")
+cap2 = stCap(VideoCapture(video_2_path), videoName="video2.webm")
+cap3 = stCap(VideoCapture(video_3_path), videoName="video3.webm")
+cap4=  stCap(VideoCapture(video_4_path), videoName="video4.webm")
 
 
 
@@ -36,34 +41,39 @@ def sendData(frame,i):
     try:
 
         # Encode the frame as PNG
-        _, image = cv2.imencode('.png', frame)
+        _, image = cv2.imencode('.jpg', frame)
 
         # make the request
         response = requests.post(
             "http://127.0.0.1:8080/detect/",
-            files={"file": ("image.png", image.tobytes(), "image/png")},
+            files={"file": ("image.jpg", image.tobytes(), "image/jpeg")},
             params={"frame_number": i},
 
         )
-        print(response.json(),i)
+        print(response.json(), i)
     except requests.exceptions.RequestException as e:
         print(f"Failed to send data: {e}")
 
 
-def detect(cap):
-    i = 1
-    try:
 
+
+
+# READ VIDEO PASSED IN THE PARAMETERS THEN SEND EACH  FRAME USING SEND DATA METHOD
+def detect(stCap):
+    i = 0
+    try:
         while True:
-            ret, frame = cap.read()
+            ret, frame = stCap.videoCapture.read()
             if not ret:
                 print("End of video or error reading the frame.")
                 break
             # call the send frame method
-            sendData(frame,i)
             i+=1
+            sendData(frame,i)
+
 
     finally:
-        print("TOTAL FRAMES NUMBER: ", int(cap.get(cv2.CAP_PROP_FRAME_COUNT)))
+        print("VIDEO NAME "+stCap.videoName)
+        print("TOTAL FRAMES NUMBER: ", int(stCap.videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)))
         print("FRAMES PROCESSED NUMBER = ", i)
-        cap.release()
+        stCap.videoCapture.release()
