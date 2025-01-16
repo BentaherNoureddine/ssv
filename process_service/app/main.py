@@ -9,6 +9,7 @@ app = FastAPI()
 # Charger le modèle
 model = YOLO("models/yolov8n.pt")
 
+
 @app.get("/")
 async def root():
     return {"message": "YOLOv8 Face Detection API is running"}
