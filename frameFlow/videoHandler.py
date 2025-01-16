@@ -43,6 +43,7 @@ def sendData(frame,i):
             "http://127.0.0.1:8080/detect/",
             files={"file": ("image.png", image.tobytes(), "image/png")},
             params={"frame_number": i},
+
         )
         print(response.json(),i)
     except requests.exceptions.RequestException as e:
