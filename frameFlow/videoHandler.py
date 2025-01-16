@@ -37,9 +37,8 @@ def videoAbleToOpen(cap):
 
 
 # send data to the process service via http
-def sendData(frame,i):
+def sendData(frame, i):
     try:
-
         # Encode the frame as PNG
         _, image = cv2.imencode('.jpg', frame)
 
@@ -48,17 +47,18 @@ def sendData(frame,i):
             "http://127.0.0.1:8080/detect/",
             files={"file": ("image.jpg", image.tobytes(), "image/jpeg")},
             params={"frame_number": i},
-
         )
+
+        # Increment i and return the updated value
+        if response.status_code == 200:
+            i+=1
         print(response.json(), i)
+        return i
     except requests.exceptions.RequestException as e:
         print(f"Failed to send data: {e}")
+        return i  # return i even in case of error to prevent any issues
 
-
-
-
-
-# READ VIDEO PASSED IN THE PARAMETERS THEN SEND EACH  FRAME USING SEND DATA METHOD
+# READ VIDEO PASSED IN THE PARAMETERS THEN SEND EACH FRAME USING SEND DATA METHOD
 def detect(stCap):
     i = 0
     try:
@@ -67,13 +67,11 @@ def detect(stCap):
             if not ret:
                 print("End of video or error reading the frame.")
                 break
-            # call the send frame method
-            i+=1
-            sendData(frame,i)
-
+            # Call sendData and update i with the return value
+            i = sendData(frame, i)
 
     finally:
-        print("VIDEO NAME "+stCap.videoName)
+        print("VIDEO NAME " + stCap.videoName)
         print("TOTAL FRAMES NUMBER: ", int(stCap.videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)))
         print("FRAMES PROCESSED NUMBER = ", i)
         stCap.videoCapture.release()
