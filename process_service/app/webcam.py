@@ -4,6 +4,7 @@ from ultralytics import YOLO
 # Charger le modèle YOLOv8
 model = YOLO("models/yolov8n.pt")
 
+
 # Ouvrir la webcam
 cap = cv2.VideoCapture(0)
 
