@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Query
 from ultralytics import YOLO
 import cv2
 import numpy as np
@@ -12,7 +12,7 @@ model = YOLO("models/yolov8n.pt")
 
 
 @app.post("/detect/")
-async def detect_faces(file: UploadFile = File(...)):
+async def detect_faces(file: UploadFile = File(...),videoName:str=Query(...)):
     # Read the contents of the uploaded file asynchronously
     contents = await file.read()
 
@@ -34,6 +34,7 @@ async def detect_faces(file: UploadFile = File(...)):
         for box in result.boxes:
             # Extract the coordinates (x1, y1, x2, y2) of the bounding box and convert them to integers
             x1, y1, x2, y2 = map(int, box.xyxy[0])
+            print({"x1": x1, "y1": y1, "x2": x2, "y2": y2})
 
             # Append the coordinates of the bounding box to the 'objects' list in dictionary format
             objects.append({"x1": x1, "y1": y1, "x2": x2, "y2": y2})
@@ -41,4 +42,7 @@ async def detect_faces(file: UploadFile = File(...)):
     print("object detected")
 
 
-    return {"objects_detected": objects}
+    if len(objects) > 0:
+        return {"video_name":videoName,"object(s) detected": objects}
+    else:
+        return {}

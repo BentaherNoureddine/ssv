@@ -12,7 +12,7 @@ video_4_path = "videos/video4.webm"
 
 
 # CAPTURED VIDEO SCHEMA
-class stCap:
+class Cap:
     def __init__(self, videoCapture, videoName):
         self.videoCapture = videoCapture
         self.videoName = videoName
@@ -21,10 +21,10 @@ class stCap:
 
 # CAPTURE THE VIDEOS
 
-cap1 = stCap(VideoCapture(video_1_path), videoName="video1.mp4")
-cap2 = stCap(VideoCapture(video_2_path), videoName="video2.webm")
-cap3 = stCap(VideoCapture(video_3_path), videoName="video3.webm")
-cap4=  stCap(VideoCapture(video_4_path), videoName="video4.webm")
+cap1 = Cap(VideoCapture(video_1_path), videoName="video1.mp4")
+cap2 = Cap(VideoCapture(video_2_path), videoName="video2.webm")
+cap3 = Cap(VideoCapture(video_3_path), videoName="video3.webm")
+cap4=  Cap(VideoCapture(video_4_path), videoName="video4.webm")
 
 
 
@@ -37,7 +37,7 @@ def videoAbleToOpen(cap):
 
 
 # send data to the process service via http
-def sendData(frame, i):
+def sendData(frame,video_name, i):
     try:
         # Encode the frame as PNG
         _, image = cv2.imencode('.jpg', frame)
@@ -46,7 +46,7 @@ def sendData(frame, i):
         response = requests.post(
             "http://127.0.0.1:8080/detect/",
             files={"file": ("image.jpg", image.tobytes(), "image/jpeg")},
-            params={"frame_number": i},
+            params={"frame_number": i,"videoName": video_name},
         )
 
         # Increment i and return the updated value
@@ -56,7 +56,7 @@ def sendData(frame, i):
         return i
     except requests.exceptions.RequestException as e:
         print(f"Failed to send data: {e}")
-        return i  # return i even in case of error to prevent any issues
+        return i
 
 # READ VIDEO PASSED IN THE PARAMETERS THEN SEND EACH FRAME USING SEND DATA METHOD
 def detect(stCap):
@@ -68,7 +68,7 @@ def detect(stCap):
                 print("End of video or error reading the frame.")
                 break
             # Call sendData and update i with the return value
-            i = sendData(frame, i)
+            i = sendData(frame, stCap.videoName, i)
 
     finally:
         print("VIDEO NAME " + stCap.videoName)
